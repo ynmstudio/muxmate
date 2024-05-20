@@ -17,12 +17,19 @@ class MuxMateFieldResolver extends ObjectType
     {
         $fieldName = $resolveInfo->fieldName;
 
+        if (!isset($source->muxMetaData) || isset($source->muxMetaData[$fieldName])) {
+            return null;
+        }
+
+
         switch ($fieldName) {
             case 'error':
                 return $source->muxMetaData['errors']['type'] ?? null;
             case 'playback_id':
+                if (!isset($source->muxMetaData['playback_ids'])) return null;
+
                 $policy = $arguments['policy'] ?? null;
-                if (!$policy) {
+                if (!$policy && isset($source->muxMetaData['playback_ids'])) {
                     return $source->muxMetaData['playback_ids'][0]['id'];
                 }
                 if (isset($policy) && !in_array($policy, [MuxMateHelper::PLAYBACK_POLICY_SIGNED, MuxMateHelper::PLAYBACK_POLICY_PUBLIC], true)) {
