@@ -15,10 +15,13 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\web\View;
+use GraphQL\Type\Definition\Type;
+
+
 
 use vaersaagod\muxmate\helpers\MuxMateHelper;
 use vaersaagod\muxmate\models\MuxMateFieldAttributes;
-
+use vaersaagod\muxmate\gql\MuxMateFieldTypeGenerator;
 use yii\base\InvalidConfigException;
 use yii\db\Schema;
 
@@ -106,6 +109,20 @@ class MuxMateField extends Field implements PreviewableFieldInterface
     }
 
     /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType(): \GraphQL\Type\Definition\Type|array
+    {
+        $typeArray = MuxMateFieldTypeGenerator::generateTypes($this);
+        return [
+            'name' => $this->handle,
+            'description' => "MuxMate field",
+            'type' => array_shift($typeArray),
+        ];
+    }
+
+    /**
      * @throws InvalidConfigException
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
@@ -183,5 +200,4 @@ class MuxMateField extends Field implements PreviewableFieldInterface
                 ->andWhere(Db::parseParam("content.$column", $value));
         }
     }
-
 }
